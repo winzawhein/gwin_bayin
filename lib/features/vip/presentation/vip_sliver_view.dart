@@ -1,20 +1,13 @@
-// --- VIP SCREEN UI (SLIVER-BASED GRID) ---
-
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../app/state/providers_compat.dart';
-
-
-class VipVideosSliverView extends ConsumerWidget {
-  const VipVideosSliverView({super.key});
+class VipSliverView extends StatelessWidget {
+  final ScrollController controller;
+  const VipSliverView({super.key, required this.controller});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == ThemeMode.dark;
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Sample data to mimic your screenshot item layout
     final List<Map<String, String>> vipItems = [
       {'title': 'လီးချက်ကိမ်းတောစော်က', 'views': '3.1K'},
       {'title': 'လောလောဆယ် ကောင်မလေးပါပဲ', 'views': '1.1K'},
@@ -29,21 +22,21 @@ class VipVideosSliverView extends ConsumerWidget {
     ];
 
     return CustomScrollView(
+      controller: controller,
       slivers: [
-        // Top Header Row with Title and Search Button
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
           sliver: SliverToBoxAdapter(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const SizedBox(width: 32), // Spacer to balance the layout centering
+                const SizedBox(width: 32),
                 const Text(
                   'VIP Videos',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFFFB300), // Rich Golden Yellow text
+                    color: Color(0xFFFFB300),
                   ),
                 ),
                 IconButton(
@@ -54,16 +47,15 @@ class VipVideosSliverView extends ConsumerWidget {
             ),
           ),
         ),
-
-        // 2-Column Dynamic Grid Layout
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate:
+                const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
-              childAspectRatio: 0.95, // Form factors balanced for custom video preview cards
+              childAspectRatio: 0.95,
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) {
@@ -78,17 +70,11 @@ class VipVideosSliverView extends ConsumerWidget {
             ),
           ),
         ),
-        
-        // Dynamic Bottom Spacer for Navigation Float Area
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 100),
-        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 120)),
       ],
     );
   }
 }
-
-// --- INDIVIDUAL VIP VIDEO THUMBNAIL CARD ---
 
 class VipVideoCard extends StatelessWidget {
   final String title;
@@ -109,7 +95,7 @@ class VipVideoCard extends StatelessWidget {
         color: isDark ? const Color(0xFF1E2022) : Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: const Color(0xFFFFB300).withOpacity(0.4), // Golden ambient outer border outline
+          color: const Color(0xFFFFB300).withOpacity(0.4),
           width: 1.5,
         ),
         boxShadow: [
@@ -124,11 +110,9 @@ class VipVideoCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Stack(
           children: [
-            // Inner Visual Wrapper Element Layout
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Video Image Thumbnail Area Mock
                 Expanded(
                   flex: 3,
                   child: Container(
@@ -143,12 +127,11 @@ class VipVideoCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                
-                // Text Context Info Segment
                 Expanded(
                   flex: 2,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0, vertical: 6.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -166,7 +149,8 @@ class VipVideoCard extends StatelessWidget {
                         ),
                         Row(
                           children: [
-                            Icon(Icons.visibility_outlined, size: 14, color: Colors.grey[500]),
+                            Icon(Icons.visibility_outlined,
+                                size: 14, color: Colors.grey[500]),
                             const SizedBox(width: 4),
                             Text(
                               '$views views',
@@ -183,13 +167,12 @@ class VipVideoCard extends StatelessWidget {
                 ),
               ],
             ),
-
-            // Top-Right Floating Golden "VIP" Tag Badge
             Positioned(
               top: 6,
               right: 6,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFB300),
                   borderRadius: BorderRadius.circular(6),
@@ -210,3 +193,4 @@ class VipVideoCard extends StatelessWidget {
     );
   }
 }
+

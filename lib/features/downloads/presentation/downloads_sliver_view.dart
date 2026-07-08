@@ -1,25 +1,17 @@
-// --- DOWNLOADS TAB VIEW (SLIVER-BASED EMPTY STATE) ---
-
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../app/state/providers_compat.dart';
-
-
-class DownloadsSliverView extends ConsumerWidget {
-  const DownloadsSliverView({super.key});
+class DownloadsSliverView extends StatelessWidget {
+  final ScrollController controller;
+  const DownloadsSliverView({super.key, required this.controller});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == ThemeMode.dark;
-
-    // Use gold accents for this design variation matching the screenshot asset highlights
-    const goldAccent = Color(0xFFD4AF37); 
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const goldAccent = Color(0xFFD4AF37);
 
     return CustomScrollView(
+      controller: controller,
       slivers: [
-        // Tab Page Header
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
           sliver: SliverToBoxAdapter(
@@ -36,8 +28,6 @@ class DownloadsSliverView extends ConsumerWidget {
             ),
           ),
         ),
-
-        // Centered Main Content Empty State
         SliverFillRemaining(
           hasScrollBody: false,
           child: Padding(
@@ -45,15 +35,12 @@ class DownloadsSliverView extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Big Custom Arrow Download Tray Icon
                 Icon(
                   Icons.download_for_offline_outlined,
                   size: 100,
                   color: isDark ? goldAccent.withOpacity(0.6) : goldAccent,
                 ),
                 const SizedBox(height: 32),
-
-                // Primary Label Header
                 Text(
                   'No Downloads Yet',
                   style: TextStyle(
@@ -63,8 +50,6 @@ class DownloadsSliverView extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-
-                // Explanatory Help Text
                 Text(
                   'Download videos to watch offline anytime',
                   textAlign: TextAlign.center,
@@ -74,10 +59,9 @@ class DownloadsSliverView extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 36),
-
-                // Instruction Informational Capsule Tag Bubble
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: isDark ? Colors.black38 : Colors.grey[200],
                     borderRadius: BorderRadius.circular(30),
@@ -106,14 +90,13 @@ class DownloadsSliverView extends ConsumerWidget {
                     ],
                   ),
                 ),
-                
-                // Safety offset spacing cushion for bottom navbar placement
-                const SizedBox(height: 80),
+                const SizedBox(height: 120),
               ],
             ),
           ),
-        )
+        ),
       ],
     );
   }
 }
+

@@ -32,26 +32,25 @@ final dioProvider = Provider<Dio>((ref) {
     InterceptorsWrapper(
       onRequest: (options, handler) async {
         final deviceId = await ref.read(deviceIdProvider.future);
+        // final token = ref.read(appAuthTokenProvider);
         final token =
             '47ca0305433c596d8e9990af06adcc09a967f5a63fb78419bf49e118cf69524f';
         options.headers.addAll({
           'User-Agent': 'GwinBayinApp',
-          // 'x-app-token': '47ca0305433c596d8e9990af06adcc09a967',
           'Authorization': 'Bearer $token',
+          'x-app-token': token,
           'x-device-id': deviceId,
-          // deviceId.isEmpty ? 'test' : deviceId,
           'x-app-version': '1.0.0',
-          'x-real-user': 'true',
-          // 'Accept':'application/json'
+          // backend expects this only for endpoints like GET /api/videos
         });
 
-        // Dynamic check using your helper method configuration
-        // final realUser = (options.extra['realUser'] as bool?) == true;
-        // if (realUser) {
-        //   options.headers['x-real-user'] = 'true'; // MUST BE A STRING
-        // } else {
-        //   options.headers.remove('x-real-user');
-        // }
+        // Only enable x-real-user when repository explicitly opts-in.
+        final realUser = (options.extra['realUser'] as bool?) == true;
+        if (realUser) {
+          options.headers['x-real-user'] = 'true'; // MUST BE A STRING
+        } else {
+          options.headers.remove('x-real-user');
+        }
 
         log('[API] --> ${options.method.toUpperCase()} ${options.uri}');
         log('[API] Headers: ${options.headers}'); // Useful for debugging

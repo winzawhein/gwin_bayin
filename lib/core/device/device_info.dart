@@ -3,7 +3,7 @@
 import 'package:device_info_plus/device_info_plus.dart';
 
 Future<_CollectedDeviceInfo> collectDeviceInfo() async {
-    final plugin = DeviceInfoPlugin();
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
 
     // Platform-specific fallbacks.
     final base = _CollectedDeviceInfo(
@@ -15,30 +15,28 @@ Future<_CollectedDeviceInfo> collectDeviceInfo() async {
     );
 
     try {
-      // device_info_plus provides platform-specific getters.
-      final android = await plugin.androidInfo;
       return base.copyWith(
-        deviceId: android.id,
-        deviceModel: android.model ?? base.deviceModel,
-        manufacturer: android.manufacturer ?? base.manufacturer,
-        osVersion: android.version.release ?? base.osVersion,
-        brand: android.brand ?? base.brand,
+        deviceId: androidInfo.id,
+        deviceModel: androidInfo.model ?? base.deviceModel,
+        manufacturer: androidInfo.manufacturer ?? base.manufacturer,
+        osVersion: androidInfo.version.release ?? base.osVersion,
+        brand: androidInfo.brand ?? base.brand,
       );
     } catch (_) {
       // ignore and fall back
     }
 
-    try {
-      final ios = await plugin.iosInfo;
-      return base.copyWith(
-        deviceModel: ios.utsname.machine ?? base.deviceModel,
-        manufacturer: 'Apple',
-        osVersion: ios.systemVersion ?? base.osVersion,
-        brand: 'Apple',
-      );
-    } catch (_) {
-      // ignore and return base
-    }
+    // try {
+    //   final ios = await plugin.iosInfo;
+    //   return base.copyWith(
+    //     deviceModel: ios.utsname.machine ?? base.deviceModel,
+    //     manufacturer: 'Apple',
+    //     osVersion: ios.systemVersion ?? base.osVersion,
+    //     brand: 'Apple',
+    //   );
+    // } catch (_) {
+    //   // ignore and return base
+    // }
 
 
     return base;

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../../core/model/setting_model_response.dart';
 import '../../core/network/api_exception.dart';
@@ -10,6 +11,10 @@ import '../../core/provider/device_provider.dart';
 import '../../features/vip/domain/vip_status.dart';
 
 import 'app_boot_state_dto.dart';
+
+
+final versionProvider = StateProvider<String>((ref) => '');
+final aboutUsProvider = StateProvider<String>((ref) => '');
 
 final appBootRepositoryProvider = Provider<AppBootRepository>((ref) {
   final dio = ref.watch(dioProvider);
@@ -58,10 +63,10 @@ class AppBootRepository {
     throw ApiException(message: 'Invalid server response');
   }
   Future<SettingModelResponse> settings() async {
-
     final res = await _dio.get(
-      '/api/vip/settings',
+      '/api/settings',
     );
+
 
     final data = res.data;
     log("Setting>>>  Vip $data");

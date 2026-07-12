@@ -1,9 +1,18 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/state/theme_notifier.dart';
+import '../../../app/state/app_boot_repositories.dart';
 import '../../../widgets/customize_switch.dart';
+
+import '../../../core/provider/device_provider.dart';
+import '../../../core/provider/video_repository.dart';
+import 'widgets/dialog.dart';
+import 'widgets/member_screen.dart';
 
 class SettingsSliverView extends ConsumerWidget {
   final ScrollController controller;
@@ -13,7 +22,12 @@ class SettingsSliverView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = ref.watch(isDarkProvider);
     final surfaceColor = Theme.of(context).colorScheme.surface;
-
+Future<void> _redirectToUrl(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw Exception('Could not launch redirect target: $urlString');
+    }
+  }
     return CustomScrollView(
       controller: controller,
       slivers: [
@@ -108,7 +122,10 @@ class SettingsSliverView extends ConsumerWidget {
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () async {
+                          VipDialogHelper.showVipPurchaseDialog(context);
+                        },
+
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF2979FF),
                           foregroundColor: Colors.white,
@@ -151,7 +168,7 @@ class SettingsSliverView extends ConsumerWidget {
                         context,
                         icon: Icons.info_outline,
                         title: 'Version',
-                        subtitle: '1.0.0',
+                        subtitle: ref.watch(versionProvider),
                         showTrailing: false,
                       ),
                       Divider(
@@ -175,6 +192,10 @@ class SettingsSliverView extends ConsumerWidget {
                         title: 'About Us',
                         subtitle: 'App အကြောင်း',
                         showTrailing: true,
+                        ontap: () {
+                          log("dkfd");
+                          _redirectToUrl('https://gwinbayin.com');
+                        },
                       ),
                     ],
                   ),
@@ -195,49 +216,53 @@ class SettingsSliverView extends ConsumerWidget {
     required String title,
     required String subtitle,
     required bool showTrailing,
+    VoidCallback? ontap
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white10 : Colors.black12,
-              borderRadius: BorderRadius.circular(8),
+    return GestureDetector(
+      onTap: ontap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white10 : Colors.black12,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                size: 22,
+                color: isDark ? Colors.white70 : Colors.black87,
+              ),
             ),
-            child: Icon(
-              icon,
-              size: 22,
-              color: isDark ? Colors.white70 : Colors.black87,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : Colors.black,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                ),
-              ],
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  ),
+                ],
+              ),
             ),
-          ),
-          if (showTrailing)
-            Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey[600]),
-        ],
+            if (showTrailing)
+              Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey[600]),
+          ],
+        ),
       ),
     );
   }

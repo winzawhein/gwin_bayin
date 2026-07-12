@@ -1,8 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/custom_video_horizontal_section.dart';
 import '../../../core/provider/video_notifier_provider.dart';
+import '../../../shared/widgets/video_player.dart';
 
 class HomeSliverView extends ConsumerWidget {
   final ScrollController controller;
@@ -39,6 +42,7 @@ class HomeSliverView extends ConsumerWidget {
                     ),
                   ),
                   data: (videos) {
+                    log("Length>> ${videos.length}");
                     return Column(
                       children: [
                         VideoHorizontalSection(
@@ -106,58 +110,84 @@ class HeaderProfileRow extends StatelessWidget {
   }
 }
 
-class FeaturedCard extends StatelessWidget {
+class FeaturedCard extends ConsumerWidget {
   const FeaturedCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final surfaceColor = Theme.of(context).colorScheme.surface;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final feed = ref.watch(videoProvider);
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: BorderRadius.circular(20),
+    return feed.when(
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: CircularProgressIndicator(),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Featured',
-            style: TextStyle(color: Colors.grey[400], fontSize: 14),
+      error: (e, _) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Text(
+          e.toString(),
+          style: const TextStyle(color: Color(0xFFE53935)),
+        ),
+      ),
+      data: (videos) {
+        log("Length>> ${videos.length}");
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: surfaceColor,
+            borderRadius: BorderRadius.circular(20),
           ),
-          const SizedBox(height: 6),
-          Text(
-            'အထူးရွေးချယ်ထားသော ဗီဒီယိုများ',
-            style: TextStyle(
-              color: isDark ? Colors.white : Colors.black87,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE53935),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Featured',
+                style: TextStyle(color: Colors.grey[400], fontSize: 14),
               ),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            icon: const Icon(Icons.play_arrow, size: 20),
-            label: const Text(
-              'Play',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+              const SizedBox(height: 6),
+              Text(
+                'အထူးရွေးချယ်ထားသော ဗီဒီယိုများ',
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  VideoPlayer.play(
+                    context,
+                    videos.first.url,
+                    videos.first.title,
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE53935),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                ),
+                icon: const Icon(Icons.play_arrow, size: 20),
+                label: const Text(
+                  'Play',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
-

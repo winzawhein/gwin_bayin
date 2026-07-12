@@ -28,13 +28,21 @@ class VideoPlayer extends StatefulWidget {
 }
 
 class _VideoPlayerState extends State<VideoPlayer> with WidgetsBindingObserver {
-  late BetterPlayerController _controller;
+  BetterPlayerController? _controller;
+
+  bool get _hasValidUrl => widget.movieUrl.trim().isNotEmpty;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _controller = GlobalVideoManager().getOrCreateController(widget.movieUrl, widget.movieTitle);
+
+    if (_hasValidUrl) {
+      _controller = GlobalVideoManager().getOrCreateController(
+        widget.movieUrl,
+        widget.movieTitle,
+      );
+    }
   }
 
   @override
@@ -44,22 +52,26 @@ class _VideoPlayerState extends State<VideoPlayer> with WidgetsBindingObserver {
   }
 
   Future<void> _tryEnablePictureInPicture() async {
-    final isSupported = await _controller.isPictureInPictureSupported();
+    // Guard against invalid/empty stream URLs causing BetterPlayer layout to receive NaN.
+    if (!_hasValidUrl) return;
+    if (_controller == null) return;
+
+    final isSupported = await _controller!.isPictureInPictureSupported();
     if (!isSupported) return;
 
-    final key = _controller.betterPlayerGlobalKey;
+    final key = _controller?.betterPlayerGlobalKey;
     if (key == null) {
       // The BetterPlayer key may be assigned after init/build. Retry once next frame.
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final retryKey = _controller.betterPlayerGlobalKey;
+        final retryKey = _controller?.betterPlayerGlobalKey;
         if (retryKey != null) {
-          _controller.enablePictureInPicture(retryKey);
+          _controller?.enablePictureInPicture(retryKey);
         }
       });
       return;
     }
 
-    _controller.enablePictureInPicture(key);
+    _controller?.enablePictureInPicture(key);
   }
 
   /// Handles App Lifecycle changes (e.g., User presses home button)
@@ -74,8 +86,13 @@ class _VideoPlayerState extends State<VideoPlayer> with WidgetsBindingObserver {
 
   void _handleBackPress() async {
 
+    if (_controller == null) {
+      Navigator.pop(context);
+      return;
+    }
+
     // Check if the player is currently operating in Picture-in-Picture mode
-    bool isPip = await _controller.isPictureInPictureSupported();
+    bool isPip = await _controller!.isPictureInPictureSupported();
     // isPictureInPictureActive() ?? false;
 
     if (!isPip) {
@@ -99,7 +116,7 @@ class _VideoPlayerState extends State<VideoPlayer> with WidgetsBindingObserver {
         child: Scaffold(
           backgroundColor: Colors.black,
           appBar: AppBar(
-            title: Text(widget.movieTitle, style: const TextStyle(color:Colors.white)),
+            title: Text(widget.movieTitle, style: const TextStyle(color: Colors.white)),
             backgroundColor: Colors.transparent,
             elevation: 0,
             actions: [
@@ -121,10 +138,19 @@ class _VideoPlayerState extends State<VideoPlayer> with WidgetsBindingObserver {
             child: Center(
               child: AspectRatio(
                 aspectRatio: 16 / 9,
-                child: BetterPlayer(
-                  key: _controller.betterPlayerGlobalKey,
-                  controller: _controller,
-                ),
+                child: _controller == null
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.red,
+                        ),
+                      )
+                  : BetterPlayer(
+                      key: _controller!.betterPlayerGlobalKey,
+                      controller: _controller!,
+                      // BetterPlayer bug workaround: hide progress bar until stream metadata is ready.
+                      // Prevents NaN geometry in ProgressBarPainter for some live sources.
+
+                    ),
               ),
             ),
           ),

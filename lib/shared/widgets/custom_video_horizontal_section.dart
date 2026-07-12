@@ -46,15 +46,23 @@ class VideoHorizontalSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        Row(
-          children: List.generate(videos.length, (index) {
-            return Expanded(
-              child: Padding(
+        // Fix: Wrap the ListView in a SizedBox to provide a strict height constraint,
+        // and use ListView.builder for efficient horizontal scrolling.
+        SizedBox(
+          height: 220, 
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: videos.length,
+            itemBuilder: (context, index) {
+              return Padding(
                 padding: const EdgeInsets.only(right: 12),
-                child: VideoThumbnailCard(video: videos[index]),
-              ),
-            );
-          }),
+                child: SizedBox(
+                  width: 160, // Give each thumbnail item a fixed width
+                  child: VideoThumbnailCard(video: videos[index]),
+                ),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -70,24 +78,25 @@ class VideoThumbnailCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaceColor = Theme.of(context).colorScheme.surface;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     final thumbnailUrl = video.thumbnail;
 
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: () {
-        // log("Url>>>> ${video.url}");
         VideoPlayer.play(context, video.url, video.title);
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
+          // Fix: Wrap the ClipRRect/Stack in an AspectRatio or a SizedBox 
+          // to give it a bounded height inside the Column.
           AspectRatio(
-            aspectRatio: 1.5,
+            aspectRatio: 16 / 9, // Standard video thumbnail ratio
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Stack(
-                fit: StackFit.expand,
+                fit: StackFit.expand, // This is now safe because AspectRatio bounds it!
                 children: [
                   CachedNetworkImage(
                     imageUrl: thumbnailUrl,

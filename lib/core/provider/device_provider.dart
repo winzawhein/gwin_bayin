@@ -9,11 +9,10 @@ final deviceServiceProvider = Provider<DeviceService>((ref) {
 
 /// Provides a stable app-level device id (persisted) for auth headers.
 final deviceIdProvider = FutureProvider<String>((ref) async {
-  final deviceService = ref.watch(deviceServiceProvider);
-    final deviceInfo = await collectDeviceInfo();
-
+  final deviceInfo = await collectDeviceInfo();
   return deviceInfo.deviceId;
 });
+
 
 
 
